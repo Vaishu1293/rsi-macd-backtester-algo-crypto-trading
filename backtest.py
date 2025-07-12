@@ -1,12 +1,12 @@
 import backtrader as bt
+import csv
 from strategies.rsi_macd_strategy import RSIMACDStrategy
 import yfinance as yf
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
 
-# ----------------------------
-# Step 1: Download historical data
-# ----------------------------
+
 symbol = "BTC-USD"
 os.makedirs("data", exist_ok=True)
 csv_path = f"data/{symbol.replace('-', '_')}_daily.csv"
@@ -14,92 +14,55 @@ csv_path = f"data/{symbol.replace('-', '_')}_daily.csv"
 if not os.path.exists(csv_path):
     print("📥 Downloading historical data...")
     df = yf.download(symbol, start="2020-01-01", end="2024-12-31", interval="1d")
-    df.to_csv(csv_path, index=True)  # Ensure index is saved
+    df.to_csv(csv_path, index=True)
 else:
     print("📂 Loading existing data from CSV...")
     df = pd.read_csv(csv_path)
 
-# ----------------------------
-# Step 2: Normalize Date column and index
-# ----------------------------
-# If 'Date' is missing, it might be stored as 'Unnamed: 0'
 if "Date" not in df.columns:
     if "Unnamed: 0" in df.columns:
         df.rename(columns={"Unnamed: 0": "Date"}, inplace=True)
     else:
         raise ValueError("❌ No 'Date' or 'Unnamed: 0' column found in CSV.")
 
-# Ensure 'Date' column is datetime
 df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
 df.set_index("Date", inplace=True)
-
-# Drop any rows with missing price values (optional but safe)
 df.dropna(subset=["Open", "High", "Low", "Close", "Volume"], inplace=True)
 
-# ----------------------------
-# Step 3: Show data sample
-# ----------------------------
 print("📊 Data Sample:")
 print(df.head())
 
-# ----------------------------
-# Step 4: Define Strategy
-# ----------------------------
-class TestStrategy(bt.Strategy):
-    def __init__(self):
-        print("🔍 Strategy initialized")
-
-    def next(self):
-        print(f"🕒 Date: {self.datas[0].datetime.date(0)}, Close: {self.datas[0].close[0]}")
-
-# ----------------------------
-# Step 5: Initialize Backtrader engine
-# ----------------------------
 cerebro = bt.Cerebro()
-cerebro.broker.set_cash(100000)  # Starting balance
-
-# ----------------------------
-# Step 6: Convert Pandas DataFrame to Backtrader data feed
-# ----------------------------
+cerebro.broker.set_cash(100000)
 data_feed = bt.feeds.PandasData(dataname=df)
-
-# ----------------------------
-# Step 7: Add data + strategy
-# ----------------------------
 cerebro.adddata(data_feed)
-# cerebro.addstrategy(TestStrategy)
-# Replace TestStrategy with RSIMACDStrategy
 cerebro.addstrategy(RSIMACDStrategy)
 
-# ----------------------------
-# Step 8: Run backtest
-# ----------------------------
-print("🚀 Running Backtest...")
 cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe')
 cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
 cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
-cerebro.run()
 
-# ----------------------------
-# Step 9: Plot results
-# ----------------------------
+cerebro.addanalyzer(bt.analyzers.TimeReturn, _name='returns')
+
+print("🚀 Running Backtest...")
+results = cerebro.run()
 cerebro.plot()
-
-strat = results[0] # Get the strategy instance
-# Extract analyzer reports
+print("results: ", results)
+strat = results[0]
 sharpe = strat.analyzers.sharpe.get_analysis()
 trades = strat.analyzers.trades.get_analysis()
 drawdown = strat.analyzers.drawdown.get_analysis()
 
-print("\n📊 PERFORMANCE SUMMARY:")
-# Sharpe Ratio
-sharpe_ratio = sharpe.get('sharperatio', None)
+returns = strat.analyzers.returns.get_analysis()
 
+
+print("\n📊 PERFORMANCE SUMMARY:")
+sharpe_ratio = sharpe.get('sharperatio', None)
 if sharpe_ratio is not None:
     print(f"✅ Sharpe Ratio: {sharpe_ratio:.2f}")
 else:
-    print("⚠️ Sharpe Ratio: Not available (maybe no trades or flat returns)")
-# Trade Stats
+    print("⚠️ Sharpe Ratio: Not available")
+
 total_trades = trades.total.total if trades.total.total else 0
 won_trades = trades.won.total if trades.won.total else 0
 lost_trades = trades.lost.total if trades.lost.total else 0
@@ -108,15 +71,46 @@ if total_trades > 0:
     print(f"✅ Win Rate: {won_trades}/{total_trades} ({win_rate:.2f}%)")
 else:
     print("⚠️ Win Rate: No trades made")
-# Max Drawdown
 
 max_dd = drawdown.max.drawdown
 print(f"📉 Max Drawdown: {max_dd:.2f}%")
-# Portfolio Value
 final_value = cerebro.broker.getvalue()
 print(f"💰 Final Portfolio Value: ${final_value:.2f}")
 
-# Print full analyzer outputs
-print("Full Sharpe:", sharpe)
-print("Full Trades:", trades)
-print("Full Drawdown:", drawdown)
+# ✅ Step 2.5.B – Export Full Trade Log to CSV
+if hasattr(strat, 'trade_log'):
+    os.makedirs("results", exist_ok=True)
+    csv_file = "results/trade_log.csv"
+    with open(csv_file, mode="w", newline="") as f:
+        fieldnames = ['entry_date', 'exit_date', 'entry_price', 'exit_price', 'duration_days', 'pnl', 'size']
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in strat.trade_log:
+            writer.writerow(row)
+    print(f"📂 Trade log saved to {csv_file}")
+
+    df_log = pd.read_csv(csv_file)
+    print("\n📊 Trade Summary Stats:")
+    print(df_log.describe())
+else:
+    print("⚠️ No trade log found in strategy.")
+
+
+returns_series = pd.Series(returns)
+cumulative = (1 + returns_series).cumprod()
+# Plot Equity Curve
+plt.figure(figsize=(12, 6))
+plt.plot(cumulative, label="Equity Curve")
+plt.title("📈 Portfolio Equity Curve")
+plt.xlabel("Date")
+plt.ylabel("Cumulative Returns")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.savefig("results/equity_curve.png")
+plt.show()
+
+cumulative.to_csv("results/equity_curve.csv")
+
+
+
