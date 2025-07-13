@@ -11,6 +11,8 @@ st.title("🚀 Live Algo Trading Dashboard")
 # === File Paths ===
 TRADE_LOG_PATH = "results/trade_log.csv"
 EQUITY_PATH = "results/equity_curve.csv"
+EQUITY_IMG_PATH = "results/equity_curve.png"
+STRATEGY_PATH = "strategies/rsi_macd_strategy.py"
 
 # === Load Trade Log ===
 if os.path.exists(TRADE_LOG_PATH):
@@ -34,32 +36,50 @@ st.sidebar.markdown("**Asset:** BTC/USDT")
 st.sidebar.markdown("**Interval:** 1-minute")
 st.sidebar.markdown("**Capital:** 100,000 USDT")
 
-# === Main Content Layout ===
-col1, col2 = st.columns([2, 1])
+# === Tabs for Dashboard ===
+tab1, tab2 = st.tabs(["📊 Live Trades", "🧪 Backtest Charts"])
 
-# === Equity Curve Chart ===
-with col1:
-    st.subheader("📈 Equity Curve")
-    if not equity_df.empty:
-        st.line_chart(equity_df)
-    else:
-        st.info("No equity data yet.")
+# === TAB 1: Live Trades ===
+with tab1:
+    col1, col2 = st.columns([2, 1])
 
-# === Recent Trade Signals Table ===
-with col2:
-    st.subheader("🧠 Recent Trade Signals")
+    # === Equity Curve Chart ===
+    with col1:
+        st.subheader("📈 Equity Curve")
+        if not equity_df.empty:
+            st.line_chart(equity_df)
+        else:
+            st.info("No equity data yet.")
+
+    # === Recent Trade Signals Table ===
+    with col2:
+        st.subheader("🧠 Recent Trade Signals")
+        if not trades_df.empty:
+            recent = trades_df.tail(5).sort_values(by="exit_date", ascending=False)
+            st.table(recent[["entry_date", "exit_date", "pnl"]])
+        else:
+            st.info("No trades yet.")
+
+    # === Full Trade Log ===
+    st.subheader("📒 Full Trade Log")
     if not trades_df.empty:
-        recent = trades_df.tail(5).sort_values(by="exit_date", ascending=False)
-        st.table(recent[["entry_date", "exit_date", "pnl"]])
+        st.dataframe(trades_df[::-1])  # Show latest trades at the top
     else:
-        st.info("No trades yet.")
+        st.warning("Trade log is currently empty.")
 
-# === Full Trade Log ===
-st.subheader("📒 Full Trade Log")
-if not trades_df.empty:
-    st.dataframe(trades_df[::-1])  # Show latest trades at the top
-else:
-    st.warning("Trade log is currently empty.")
+# === TAB 2: Backtest Charts ===
+with tab2:
+    st.subheader("📉 Backtest Equity Curve")
+    if os.path.exists(EQUITY_IMG_PATH):
+        st.image(EQUITY_IMG_PATH, use_column_width=True)
+    else:
+        st.info("No backtest chart yet.")
+
+    st.subheader("🧠 Strategy Logic (RSI + MACD)")
+    if os.path.exists(STRATEGY_PATH):
+        st.code(open(STRATEGY_PATH).read(), language="python")
+    else:
+        st.warning("Strategy file not found.")
 
 # === Auto Refresh ===
 st.markdown("⏱️ Auto-refresh in 15 seconds...")
