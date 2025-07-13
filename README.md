@@ -1,8 +1,3 @@
-Here is the modified `README.md` rewritten for your **Alpaca API** setup instead of Binance, while keeping everything else intact:
-
----
-
-```markdown
 # QuantEdge AI – Real-Time Algorithmic Trading Platform (Alpaca Edition)
 
 An enterprise-grade, modular AI-powered trading bot system built for:
@@ -192,8 +187,3 @@ This system was developed as part of a modular AI trading stack for **QuantEdge 
 ## 💡 License
 
 MIT License · Use at your own risk on real markets.
-
-```
-
-Let me know if you'd like the updated version in a downloadable `README.md` file or want it published directly to your GitHub repo.
-```
