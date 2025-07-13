@@ -3,3 +3,9 @@ yfinance
 pandas
 ta
 matplotlib
+alpaca-py 
+websocket-client
+alpaca-trade-api 
+python-dotenv
+streamlit
+
