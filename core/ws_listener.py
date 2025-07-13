@@ -1,9 +1,10 @@
 import os
+import asyncio
 from dotenv import load_dotenv
+from alpaca.data.live import CryptoDataStream
+from core.telegram_alerts import send_message
 from alpaca.data.historical import CryptoHistoricalDataClient
 from core.alpaca_client import place_market_order, get_position
-from alpaca.data.live import CryptoDataStream
-import asyncio
 
 load_dotenv()
 
@@ -38,6 +39,7 @@ def check_signal(df):
     ):
         if not in_position:
             print(f"✅ BUY Signal @ {latest['close']}")
+            send_message(f"✅ BUY Signal @ {latest['close']:.2f}")
             place_market_order(symbol, "buy", qty)
         else:
             print("🔒 Already in position – skipping BUY")
@@ -49,6 +51,7 @@ def check_signal(df):
     ):
         if in_position:
             print(f"🔻 SELL Signal @ {latest['close']}")
+            send_message(f"🔻 SELL Signal @ {latest['close']:.2f}")
             place_market_order(symbol, "sell", qty)
         else:
             print("🚫 No position – skipping SELL")
