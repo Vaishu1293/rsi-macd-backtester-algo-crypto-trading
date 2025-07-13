@@ -1,55 +1,57 @@
+Here is the modified `README.md` rewritten for your **Alpaca API** setup instead of Binance, while keeping everything else intact:
 
-# 🤖 QuantEdge AI – Real-Time Algorithmic Trading Platform
+---
 
-An enterprise-grade, modular **AI-powered trading bot system** built for:
+```markdown
+# QuantEdge AI – Real-Time Algorithmic Trading Platform (Alpaca Edition)
 
-- 💹 Live Binance trading (testnet)
-- 📊 Backtesting with indicators and metrics
-- 📬 Real-time Telegram alerts
-- 🌐 Streamlit web dashboard
-- 🔒 Risk-managed, pluggable strategies
+An enterprise-grade, modular AI-powered trading bot system built for:
+
+💹 Live **Alpaca** trading (paper trading or live)  
+📊 Backtesting with indicators and metrics  
+📬 Real-time Telegram alerts  
+🌐 Streamlit web dashboard  
+🔒 Risk-managed, pluggable strategies
 
 ---
 
 ## 🧠 Powered By
-
-- **Python** · **Backtrader** · **pandas-ta**
-- **Binance API (Testnet)** · **Telegram Bot API**
-- **Streamlit** · **Matplotlib** · **WebSockets**
+**Python** · **Backtrader** · **pandas-ta**  
+**Alpaca API** · **Telegram Bot API**  
+**Streamlit** · **Matplotlib** · **WebSockets**
 
 ---
 
 ## ✅ Core Features
 
 ### 🔁 Real-Time Trading Bot
-- Connects to Binance Futures Testnet via WebSocket
+- Connects to **Alpaca WebSocket API**
 - Streams live OHLCV candles (1m)
 - Computes 7+ indicators (RSI, MACD, EMA, SMA, ATR, Bollinger Bands, Stochastic)
-- Executes **market BUY/SELL orders** based on signal logic
-- Sends real-time alerts via Telegram
+- Executes market **BUY/SELL** orders based on signal logic
+- Sends real-time alerts via **Telegram**
 
 ### 📈 Backtesting Engine
 - Built on **Backtrader**
 - Supports:
-  - Daily OHLCV from Yahoo via `yfinance`
-  - RSI + MACD + SMA/EMA + ATR-based strategies
-  - Signal logging
-  - Trade export to `CSV`
-- Metrics: Sharpe Ratio, Win Rate, Max Drawdown
+  - Daily OHLCV from **Yahoo Finance** via `yfinance`
+  - RSI + MACD + EMA/SMA + ATR-based strategies
+  - Signal logging and result export
+  - Metrics: **Sharpe Ratio**, **Win Rate**, **Max Drawdown**
 
 ### 📊 Streamlit Dashboard
-- Real-time **equity curve** plot
-- View **latest trades + full trade log**
-- Tabbed display of **backtest charts + strategy code**
+- Real-time equity curve plot
+- View latest trades + full trade log
+- **Tabbed view**: Live trades, backtest charts, and strategy logic
 
 ### 🔒 Risk Management
-- Position sizing based on `MAX_RISK_PERCENT`
-- Dynamic quantity using **ATR x STOP_LOSS_BUFFER**
-- Prevents overtrading or double entries
+- Position sizing via `MAX_RISK_PERCENT`
+- Dynamic quantity using `ATR × STOP_LOSS_BUFFER`
+- Prevents overtrading and overlapping entries
 
 ### 📬 Telegram Bot
 - Sends alerts for each BUY/SELL action
-- Supports status commands via message (optional)
+- Supports status and control commands (optional)
 
 ---
 
@@ -59,17 +61,17 @@ An enterprise-grade, modular **AI-powered trading bot system** built for:
 
 algo-trading-bot/
 ├── core/
-│   ├── binance\_client.py      # Binance API & auth
-│   ├── ws\_listener.py         # WebSocket stream + signal engine
-│   └── telegram\_alerts.py     # Telegram notifications
+│   ├── alpaca\_client.py        # Alpaca API client and trading logic
+│   ├── ws\_listener.py          # WebSocket stream + signal engine
+│   └── telegram\_alerts.py      # Telegram notifications
 ├── strategies/
-│   └── rsi\_macd\_strategy.py   # Backtrader strategy logic
+│   └── rsi\_macd\_strategy.py    # Backtrader strategy logic
 ├── dashboard/
-│   └── app.py                 # Streamlit dashboard
-├── results/                   # trade\_log.csv, equity\_curve.csv, PNGs
-├── backtest.py                # Full backtesting script
-├── test\_ws.py                 # Live Binance bot runner
-├── test\_connection.py         # API test for Binance
+│   └── app.py                  # Streamlit dashboard UI
+├── results/                    # trade\_log.csv, equity\_curve.csv, PNGs
+├── backtest.py                 # Full backtesting script
+├── test\_ws.py                  # Real-time live bot runner (Alpaca)
+├── test\_connection.py          # API test for Alpaca
 ├── requirements.txt
 ├── .env.example
 └── README.md
@@ -81,25 +83,28 @@ algo-trading-bot/
 ## ⚙️ Setup Instructions
 
 ### 1. 🔧 Install Requirements
-
 ```bash
 pip install -r requirements.txt
 ````
 
-### 2. 📁 Configure `.env`
+### 2. 📁 Configure .env
 
-Create your `.env` using the example below:
+Create your `.env` using the template below:
 
-```env
-BINANCE_API_KEY=your_testnet_api_key
-BINANCE_SECRET_KEY=your_testnet_secret
-BINANCE_URL=https://testnet.binancefuture.com
+```
+ALPACA_API_KEY=your_alpaca_api_key
+ALPACA_SECRET_KEY=your_alpaca_secret
+ALPACA_BASE_URL=https://paper-api.alpaca.markets
+
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=@your_telegram_id
+
 STARTING_BALANCE=100000
 MAX_RISK_PERCENT=1
 STOP_LOSS_BUFFER=1.5
 ```
+
+> 🔒 Never commit `.env` to GitHub. Add it to `.gitignore`.
 
 ---
 
@@ -111,7 +116,7 @@ STOP_LOSS_BUFFER=1.5
 python backtest.py
 ```
 
-* Outputs: equity curve, trade log, Sharpe/WinRate, PNG chart
+Outputs: equity curve, trade log, Sharpe/WinRate, PNG chart
 
 ### 🔁 Start Live Bot (WebSocket + Signal Engine + Orders)
 
@@ -119,7 +124,7 @@ python backtest.py
 python test_ws.py
 ```
 
-* Will auto-trade on testnet if signal matches logic.
+Will auto-trade on Alpaca (paper account) if signals match logic.
 
 ### 🌐 Launch Streamlit Dashboard
 
@@ -127,15 +132,15 @@ python test_ws.py
 streamlit run dashboard/app.py
 ```
 
-Visit [http://localhost:8501](http://localhost:8501)
+Visit `http://localhost:8501` in your browser
 
 ---
 
 ## 📬 Telegram Setup (Optional)
 
-1. Search for **BotFather** on Telegram
-2. Create bot → Get token → Add to `.env`
-3. Get your **chat ID** from `@userinfobot` or use `@yourusername`
+1. Search **BotFather** on Telegram and create a new bot.
+2. Copy the bot token and add to `.env`.
+3. Get your chat ID from [@userinfobot](https://t.me/userinfobot) or use your `@username`.
 
 ---
 
@@ -150,21 +155,26 @@ Visit [http://localhost:8501](http://localhost:8501)
 
 ## 📦 Deploy-Ready for GitHub or Cloud
 
-* Includes `.env.example`, `requirements.txt`, and folder scaffolding
-* Suitable for:
+Includes:
 
-  * ✅ GitHub push
-  * ✅ Cloud deployment (Render, GCP, AWS)
-  * ✅ Hackathons & demo use
+* `.env.example`
+* `requirements.txt`
+* Organized modular structure
+
+Ready for:
+
+* ✅ GitHub push
+* ✅ Deployment to Render, GCP, or AWS
+* ✅ Hackathons & demo use
 
 ---
 
 ## 🔜 Coming Next
 
-* [ ] GARCH-based volatility model (Module 7)
-* [ ] K-Means stock clustering strategy (Module 8)
-* [ ] AI Agent DAO integration (Stage 5)
-* [ ] Web3 Wallet-based strategy runner
+* GARCH-based volatility model (Module 7)
+* K-Means stock clustering strategy (Module 8)
+* AI Agent DAO integration (Stage 5)
+* Web3 Wallet-based strategy runner
 
 ---
 
@@ -183,4 +193,7 @@ This system was developed as part of a modular AI trading stack for **QuantEdge 
 
 MIT License · Use at your own risk on real markets.
 
----
+```
+
+Let me know if you'd like the updated version in a downloadable `README.md` file or want it published directly to your GitHub repo.
+```
