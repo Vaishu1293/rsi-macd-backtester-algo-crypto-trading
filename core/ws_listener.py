@@ -37,6 +37,14 @@ def check_signal(df):
         latest["rsi"] < 30 and
         latest["macd"] > latest["macd_signal"]
     ):
+        capital = float(os.getenv("STARTING_BALANCE"))
+        risk_pct = float(os.getenv("MAX_RISK_PERCENT"))
+        atr = latest["atr"]
+        if atr and atr > 0:
+            risk_amount = capital * (risk_pct / 100)
+            stop_distance = atr * float(os.getenv("STOP_LOSS_BUFFER"))
+            qty = round(risk_amount / stop_distance, 3)
+
         if not in_position:
             print(f"✅ BUY Signal @ {latest['close']}")
             send_message(f"✅ BUY Signal @ {latest['close']:.2f}")
